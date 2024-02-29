@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 from collections import defaultdict
 import csv
 
@@ -20,7 +20,7 @@ def read_csv(file_path:str) -> List[dict]:
             data.append(row)
     return data
 
-def generate_transposed_dict(csv_data:List[dict]) -> Dict[list]:
+def generate_transposed_dict(csv_data:List[dict]) -> Dict[Any, list]:
     """Creates a Dict of lists from a List of Dicts for analytical purposes.
 
     Args:
@@ -38,4 +38,4 @@ def generate_transposed_dict(csv_data:List[dict]) -> Dict[list]:
         for key in headers:
             transposed[key].append(attack_record[key])
 
-    return transposed
+    return dict(transposed)
