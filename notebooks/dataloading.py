@@ -1,11 +1,12 @@
-from typing import List#, Callable
+# import time, datetime
+# from typing import Callable
+# stamp_to_ms : Callable[[str]] = lambda T : time.mktime(datetime.datetime.strptime(T, "%Y-%m-%dT%H:%M:%S").timetuple())
+
+from typing import List
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
-
-# import time, datetime
-# stamp_to_ms : Callable[[str]] = lambda T : time.mktime(datetime.datetime.strptime(T, "%Y-%m-%dT%H:%M:%S").timetuple())
 
 def get_labeled_data(df_all_vectors_data:pd.DataFrame):
     # Label Encode so all columns are numerical instead of categorical
@@ -33,19 +34,23 @@ def split_target_and_data(df_all_vectors_data:pd.DataFrame, target_column:str="T
 
     return data, target
 
-def get_all_data(path_all_vectors:str, test_size:float=.2, unique:bool=True) -> List[np.ndarray]:
+def get_all_data(path_all_vectors:str, test_size:float=.2, unique:bool=True) -> list:
 
     raw_data = pd.read_csv(path_all_vectors)
     df_all_vectors_data = get_labeled_data(raw_data)
     if unique:
         df_all_vectors_data = unique_columns_only(df_all_vectors_data)
-    data, target = split_target_and_data(df_all_vectors_data)
+    data_df, target_df = split_target_and_data(df_all_vectors_data)
 
-    data = data.to_numpy()
-    target = target.to_numpy()
+    info_data = list(data_df.columns.values)
+    info_label = list(target_df.columns.values)
+
+    data = data_df.to_numpy()
+    target = target_df.to_numpy()
 
     X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=test_size)
     y_train = y_train.squeeze(1)
     y_test = y_test.squeeze(1)
 
-    return X_train, X_test, y_train, y_test
+
+    return (X_train, X_test, y_train, y_test), (info_data, info_label)
