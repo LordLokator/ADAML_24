@@ -39,10 +39,10 @@ def iter(max_depth, max_features, n_estimators):
         count[tree.get_depth()] += 1
     count = dict(count)
     for item, key in count.items():
-        print(f'{key} trees have length {item}')
+        print(f'[{key} trees have length {item}]')
 
     # get predictions
     y_pred = model.predict(X_test)
 
     matches = np.count_nonzero(y_test == y_pred)
-    print(f'Accuracy: {100 * matches / len(y_test)} %')
+    print(f'[Accuracy: {100 * matches / len(y_test)}%]')
