@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 import numpy as np
 import pandas as pd
 
-def get_labeled_data(df_all_vectors_data:pd.DataFrame):
+def get_labeled_data(df_all_vectors_data:pd.DataFrame, label_encoder = None):
     # Label Encode so all columns are numerical instead of categorical
     label_encoder = LabelEncoder()
     for category, dtype in zip(df_all_vectors_data, df_all_vectors_data.dtypes):
