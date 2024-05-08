@@ -99,10 +99,11 @@ def preprocess(vector_df, attack_df):
 
     return vector_df.copy()
 
-def standard_scale(df, numerical_cols):
+def standard_scale(df, numerical_cols, scaler = None):
     # Create a new StandardScaler instance and fit it on the original data
-    scaler = StandardScaler()
-    scaler.fit(df[numerical_cols])
+    if scaler is None:
+        scaler = StandardScaler()
+        scaler.fit(df[numerical_cols])
 
     # Inverse transform the numerical columns
     scaled_numerical_cols = scaler.transform(df[numerical_cols])
@@ -110,4 +111,4 @@ def standard_scale(df, numerical_cols):
     # Replace the transformed numerical columns with the original values
     df[numerical_cols] = scaled_numerical_cols
     
-    return df
+    return df, scaler
