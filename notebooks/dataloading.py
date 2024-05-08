@@ -15,7 +15,7 @@ def get_labeled_data(df_all_vectors_data:pd.DataFrame):
         if isinstance(dtype, np.dtypes.ObjectDType):
             df_all_vectors_data[category] = label_encoder.fit_transform(df_all_vectors_data[category])
 
-    return df_all_vectors_data
+    return df_all_vectors_data, label_encoder
 
 def unique_columns_only(dataframe:pd.DataFrame):
     # Assuming df is your DataFrame
@@ -37,7 +37,7 @@ def split_target_and_data(df_all_vectors_data:pd.DataFrame, target_column:str="T
 def get_all_data(path_all_vectors:str, test_size:float=.2, unique:bool=True) -> list:
 
     raw_data = pd.read_csv(path_all_vectors)
-    df_all_vectors_data = get_labeled_data(raw_data)
+    df_all_vectors_data, _ = get_labeled_data(raw_data)
     if unique:
         df_all_vectors_data = unique_columns_only(df_all_vectors_data)
     data_df, target_df = split_target_and_data(df_all_vectors_data)
@@ -112,3 +112,22 @@ def standard_scale(df, numerical_cols, scaler = None):
     df[numerical_cols] = scaled_numerical_cols
     
     return df, scaler
+
+def fix_attack_codes(df, train_attack_codes, other_cols):
+    # get the attack codes in the df
+    df_attack_codes = [c for c in df.columns if c not in other_cols]
+    attack_codes_to_delete = [ac for ac in df_attack_codes if ac not in train_attack_codes]
+    attack_codes_to_add = [ac for ac in train_attack_codes if ac not in df_attack_codes]
+    
+    # add missing attack cols
+    for col in attack_codes_to_add:
+        df[col] = 0
+        
+    # add other col
+    df['other_attack_codes'] = df[attack_codes_to_delete].any(axis=1).astype(int)
+
+    # drop these columns
+    df.drop(columns=attack_codes_to_delete, inplace=True)
+
+    
+    return df
