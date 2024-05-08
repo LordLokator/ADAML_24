@@ -163,3 +163,7 @@ cython_debug/
 
 # WanDB generated files
 */wandb/*
+
+# large data files
+data/preprocessed/*
+data/raw/*
