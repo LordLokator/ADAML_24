@@ -3,7 +3,7 @@
 # stamp_to_ms : Callable[[str]] = lambda T : time.mktime(datetime.datetime.strptime(T, "%Y-%m-%dT%H:%M:%S").timetuple())
 
 from typing import List
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split as _train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import numpy as np
 import pandas as pd
@@ -34,31 +34,31 @@ def split_target_and_data(df_all_vectors_data:pd.DataFrame, target_column:str="T
 
     return data, target
 
-def get_all_data(path_all_vectors:str, test_size:float=.2, unique:bool=True) -> list:
-
+def get_all_data(path_all_vectors:str, unique:bool=True, remove_columns:List[str] = []) -> List[pd.DataFrame]:
     raw_data = pd.read_csv(path_all_vectors)
     df_all_vectors_data = get_labeled_data(raw_data)
+    df_all_vectors_data = df_all_vectors_data.reindex(sorted(df_all_vectors_data.columns), axis=1)
+    df_all_vectors_data = df_all_vectors_data.drop(columns=remove_columns)
     if unique:
         df_all_vectors_data = unique_columns_only(df_all_vectors_data)
     data_df, target_df = split_target_and_data(df_all_vectors_data)
 
-    info_data = list(data_df.columns.values)
-    info_label = list(target_df.columns.values)
+    return (data_df, target_df)
 
+def train_test_split(data_df:pd.DataFrame, target_df:pd.DataFrame, test_size:float=.2) -> List[np.ndarray]:
     data = data_df.to_numpy()
     target = target_df.to_numpy()
 
-    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=test_size)
+    X_train, X_test, y_train, y_test = _train_test_split(data, target, test_size=test_size)
     y_train = y_train.squeeze(1)
     y_test = y_test.squeeze(1)
 
-
-    return (X_train, X_test, y_train, y_test), (info_data, info_label)
+    return (X_train, X_test, y_train, y_test)
 
 def preprocess(vector_df, attack_df):
     # add labels to the vectors df
     vector_df = pd.merge(vector_df, attack_df[['Attack ID', 'Type']], on='Attack ID', how='left')
-    
+
     # one-hot-encode attack labels
     # convert string to list
     vector_df['attack code list'] = vector_df['Attack code'].apply(lambda x: x.replace(', ',',').split(','))
@@ -109,5 +109,5 @@ def standard_scale(df, numerical_cols):
 
     # Replace the transformed numerical columns with the original values
     df[numerical_cols] = scaled_numerical_cols
-    
+
     return df
