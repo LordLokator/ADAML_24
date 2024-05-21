@@ -55,6 +55,7 @@ def get_all_data(path_all_vectors:str, test_size:float=.2, unique:bool=True) -> 
 
     return (X_train, X_test, y_train, y_test), (info_data, info_label)
 
+
 def preprocess(vector_df, attack_df):
     # add labels to the vectors df
     vector_df = pd.merge(vector_df, attack_df[['Attack ID', 'Type']], on='Attack ID', how='left')
