@@ -132,3 +132,78 @@ def fix_attack_codes(df, train_attack_codes, other_cols):
 
     
     return df
+
+def merge_df(attack_df, vector_df):
+    merged_df = pd.merge(vector_df, attack_df[['Attack ID','Start time', 'End time', 'Type']], on='Attack ID', how='left')
+    return merged_df
+
+def get_attack_duration(df):
+    # convert date columns
+    df['Start time'] = pd.to_datetime(df['Start time'].replace('0', np.nan), errors = 'coerce')
+    df['End time'] = pd.to_datetime(df['End time'].replace('0', np.nan), errors = 'coerce')
+
+    # drop NaN values
+    df = df.dropna(subset=['Start time', 'End time'])
+    df = df.reset_index(drop=True)
+
+    # get duration
+    df['Attack duration'] = np.abs(df['End time'] - df['Start time'])
+    df['Attack duration'] = df['Attack duration'].apply(lambda x: x.total_seconds())
+
+    #drop the start and end column
+    df = df.drop(columns=['Start time', 'End time'], errors='ignore')
+
+    return df.copy()
+
+def encode_attack_labels(df):
+    # convert string to list
+    df['attack code list'] = df['Attack code'].apply(lambda x: x.replace(', ',',').split(','))
+    # Identify unique labels
+    unique_labels = set(label for sublist in df['attack code list'] for label in sublist)
+
+    # create empty one-hot encoded columns
+    for label in unique_labels:
+        df[label] = 0
+
+    # iterate through rows and update one-hot encoded columns
+    for idx, row in df.iterrows():
+        labels = row['attack code list']
+        for label in labels:
+            df.at[idx, label] = 1
+
+    # drop the original 'attack code list' column
+    df.drop('attack code list', axis=1, inplace=True)
+
+    return df.copy()
+
+def convert_victim_ip(df):
+    # ip address
+    df['victim IP num'] = df['Victim IP'].apply(lambda x: int(x.split('_')[1]))
+    return df.copy()
+
+def convert_time(df):
+    # time column -> is_weekday, time_of_day
+    # convert date string to datetime
+    df.rename(columns = {'Time':'time string'}, inplace = True)
+
+    # was the time on the weekend
+    df['time'] = pd.to_datetime(df['time string'])
+    df['is_weekday'] = df['time'].apply(lambda x: int(x.weekday() < 5))
+    df['is_weekday']
+
+    # time of day in seconds
+    df['time_of_day'] = df['time'].dt.time
+    df['time_of_day'] = df['time_of_day'].apply(lambda x: 60*60*x.hour + 60*x.minute + x.second)
+
+    return df.copy() 
+
+def preprocces_for_aug(df):
+    # attack duration
+    df = get_attack_duration(df)
+    # attack labels
+    df = encode_attack_labels(df)
+    # victim ip to num
+    df = convert_victim_ip(df)
+    # time col -> is_weekday, time_of_day
+    df = convert_time(df)
+    return df
