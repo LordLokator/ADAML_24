@@ -8,4 +8,6 @@ notebook ~= 6.5.5
 imbalanced-learn ~= 0.10.1
 wandb
 prettytable
+xgboost
+hyperopt
 seaborn

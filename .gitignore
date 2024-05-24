@@ -163,6 +163,7 @@ cython_debug/
 #.idea/
 
 *.jpg
+*.png
 
 # WanDB generated files
 */wandb/*
